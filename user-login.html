@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>User Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+  <h2>User Login</h2>
+
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button onclick="login()">Login</button>
+  <p id="msg"></p>
+</div>
+
+<script>
+function login() {
+  fetch("http://127.0.0.1:5000/user-login", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+        email: email.value.trim(),
+        password: password.value.trim()
+    })
+
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.token) {
+      localStorage.setItem("userToken", data.token);
+      localStorage.setItem("userName", data.name);
+      window.location.href = "welcome.html";
+    } else {
+      msg.innerText = "Invalid login";
+    }
+  });
+}
+</script>
+</body>
+</html>

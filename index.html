@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wellness Appointment</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+  <h2>Book Appointment</h2>
+
+  <input id="name" placeholder="Full Name">
+  <input id="dob" type="date" onchange="calculateAge()">
+  <input id="age" placeholder="Age" readonly>
+
+  <select id="gender">
+    <option value="">Gender</option>
+    <option>Male</option>
+    <option>Female</option>
+    <option>Other</option>
+  </select>
+
+  <input id="place" placeholder="Place">
+  <input id="appointment_date" type="date">
+
+  <select id="timing">
+    <option value="">Timing</option>
+    <option>Morning</option>
+    <option>Afternoon</option>
+    <option>Evening</option>
+  </select>
+
+  <button onclick="book()">Submit</button>
+  <p id="msg"></p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>

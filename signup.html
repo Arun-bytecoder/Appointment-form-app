@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Sign Up</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="card">
+  <h2>Create Account</h2>
+
+  <input id="name" placeholder="Full Name">
+  <input id="email" placeholder="Email">
+  <input id="password" type="password" placeholder="Password">
+
+  <button type="button" onclick="signup()">Sign Up</button>
+  <p id="msg"></p>
+
+  <p>Already have an account?
+    <a href="user-login.html">Login</a>
+  </p>
+</div>
+
+<script>
+function signup() {
+  fetch("http://127.0.0.1:5000/signup", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      name: document.getElementById("name").value.trim(),
+      email: document.getElementById("email").value.trim(),
+      password: document.getElementById("password").value.trim()
+    })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      window.location.href = "user-login.html";
+    } else {
+      document.getElementById("msg").innerText = data.message;
+    }
+  });
+}
+</script>
+
+</body>
+</html>

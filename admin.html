@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="dashboard-body">
+
+<header class="dashboard-header">
+  <h2>Wellness Admin Dashboard</h2>
+  <div>
+    <button class="toggle-btn" onclick="toggleTheme()">🌙</button>
+    <button class="export-btn" onclick="exportCSV()">Export CSV</button>
+  </div>
+</header>
+
+<section class="stats">
+  <div class="stat-card">
+    <h3>Total Appointments</h3>
+    <p id="count">0</p>
+  </div>
+</section>
+
+<section class="chart-section">
+  <canvas id="appointmentsChart"></canvas>
+</section>
+
+<section class="table-section">
+  <table class="dashboard-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date</th>
+        <th>Timing</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="data"></tbody>
+  </table>
+</section>
+
+<script>
+const token = localStorage.getItem("token");
+let chart;
+
+function loadAppointments() {
+  fetch("http://127.0.0.1:5000/appointments", {
+    headers: { Authorization: token }
+  })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("count").innerText = data.length;
+
+    const tbody = document.getElementById("data");
+    tbody.innerHTML = "";
+
+    const perDay = {};
+
+    data.forEach(a => {
+      const day = a.created_at.split(" ")[0];
+      perDay[day] = (perDay[day] || 0) + 1;
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${a.name}</td>
+          <td>${a.appointment_date}</td>
+          <td>${a.timing}</td>
+          <td><span class="status ${a.status}">${a.status}</span></td>
+          <td>
+            ${a.status === "New" ? `
+              <button class="complete-btn"
+                onclick="markCompleted(${a.id})">
+                Complete
+              </button>` : ""}
+            <button class="delete-btn"
+              onclick="deleteAppt(${a.id})">
+              Delete
+            </button>
+          </td>
+        </tr>`;
+    });
+
+    renderChart(perDay);
+  });
+}
+
+function renderChart(data) {
+  if (chart) chart.destroy();
+  chart = new Chart(
+    document.getElementById("appointmentsChart"),
+    {
+      type: "bar",
+      data: {
+        labels: Object.keys(data),
+        datasets: [{
+          label: "Appointments per Day",
+          data: Object.values(data),
+          backgroundColor: "#3cb371"
+        }]
+      }
+    }
+  );
+}
+
+function markCompleted(id) {
+  fetch(`http://127.0.0.1:5000/status/${id}`, {
+    method: "PUT",
+    headers: { Authorization: token }
+  }).then(() => loadAppointments());
+}
+
+function deleteAppt(id) {
+  fetch(`http://127.0.0.1:5000/delete/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: token }
+  }).then(() => loadAppointments());
+}
+
+function exportCSV() {
+  fetch("http://127.0.0.1:5000/export", {
+    headers: { Authorization: token }
+  })
+  .then(res => res.blob())
+  .then(blob => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "appointments.csv";
+    a.click();
+  });
+}
+
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+  localStorage.setItem(
+    "theme",
+    document.body.classList.contains("dark") ? "dark" : "light"
+  );
+}
+
+if (localStorage.getItem("theme") === "dark")
+  document.body.classList.add("dark");
+
+loadAppointments();
+</script>
+</body>
+</html>
